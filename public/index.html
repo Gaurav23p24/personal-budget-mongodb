@@ -167,6 +167,25 @@
     <meta name="keywords" content="personal finance, budgeting app, track expenses, budget management">
     <link rel="stylesheet" href="reset.css">
     <link rel="stylesheet" href="main.css">
+
+    <!-- css to fix charts -->
+    <!-- <style>
+        /* Flexbox container to hold the charts side by side */
+        .chart-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .chart {
+            width: 45%; /* Each chart takes about half the container's width */
+            text-align: center;
+        }
+    </style> -->
+    <!-- css to fix charts -->
+
+
 </head>
 <body>
 
@@ -232,6 +251,12 @@
                     <canvas id="myChart" width="400" height="400" role="img" aria-label="Spending distribution pie chart"></canvas>
                 </p>
             </article>
+            <article aria-labelledby="chartLabel">
+                <h1 id="chartLabel">D3JS Chart</h1>
+                <p>
+                    <svg id="d3-chart" width="400" height="400" ></svg>
+                </p>
+            </article>
 
         </div>
 
@@ -240,7 +265,7 @@
     <!-- This is an A11y Change: Added role 'contentinfo' to the footer for better accessibility -->
     <footer class="bottom" role="contentinfo">
         <div class="center">
-            All rights reserved &copy; Fabio Nolasco
+            All rights reserved &copy; Gaurav Patel 2024
         </div>
     </footer>
 
@@ -293,5 +318,151 @@
 
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js" integrity="sha512-DdX/YwF5e41Ok+AI81HI8f5/5UsoxCVT9GKYZRIzpLxb8Twz4ZwPPX+jQMwMhNQ9b5+zDEefc+dcvQoPWGNZ3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js" integrity="sha512-L0Shl7nXXzIlBSUUPpxrokqq4ojqgZFQczTYlGjzONGTDAcLremjwaWv5A+EDLnxhQzY5xUZPWLOLqYRkY0Cbw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+
+
+
+<!-- THE D3JS CHART CODE -->
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+  var svg = d3.select("#d3-chart")
+    .append("svg")
+    .append("g");
+
+  svg.append("g")
+    .attr("class", "slices");
+  svg.append("g")
+    .attr("class", "labels");
+  svg.append("g")
+    .attr("class", "lines");
+
+  var width = 360,
+    height = 200,
+    radius = Math.min(width, height) / 2;
+
+  var pie = d3.layout.pie()
+    .sort(null)
+    .value(function (d) {
+      return d.budget;
+    });
+
+  var arc = d3.svg.arc()
+    .outerRadius(radius * 0.8)
+    .innerRadius(radius * 0.4);
+
+  var outerArc = d3.svg.arc()
+    .innerRadius(radius * 0.9)
+    .outerRadius(radius * 0.9);
+
+  svg.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+  var key = function (d) { return d.data.title; };
+
+  var color = d3.scale.ordinal()
+    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+  // Fetch data from the server using Axios
+  axios.get('http://localhost:3000/budget')
+    .then(function (res) {
+      var data = res.data.myBudget;
+      updateChart(data);
+    })
+    .catch(function (error) {
+      console.error("Error fetching data:", error);
+    });
+
+  function updateChart(data) {
+    /* ------- PIE SLICES ------- */
+    var slice = svg.select(".slices").selectAll("path.slice")
+      .data(pie(data), key);
+
+    slice.enter()
+      .insert("path")
+      .style("fill", function (d) { return color(d.data.title); })
+      .attr("class", "slice");
+
+    slice
+      .transition().duration(1000)
+      .attrTween("d", function (d) {
+        this._current = this._current || d;
+        var interpolate = d3.interpolate(this._current, d);
+        this._current = interpolate(0);
+        return function (t) {
+          return arc(interpolate(t));
+        };
+      });
+
+    slice.exit()
+      .remove();
+
+    /* ------- TEXT LABELS ------- */
+    var text = svg.select(".labels").selectAll("text")
+      .data(pie(data), key);
+
+    text.enter()
+      .append("text")
+      .attr("dy", ".35em")
+      .text(function (d) {
+        return d.data.title;
+      });
+
+    function midAngle(d) {
+      return d.startAngle + (d.endAngle - d.startAngle) / 2;
+    }
+
+    text.transition().duration(1000)
+      .attrTween("transform", function (d) {
+        this._current = this._current || d;
+        var interpolate = d3.interpolate(this._current, d);
+        this._current = interpolate(0);
+        return function (t) {
+          var d2 = interpolate(t);
+          var pos = outerArc.centroid(d2);
+          pos[0] = radius * (midAngle(d2) < Math.PI ? 1 : -1);
+          return "translate(" + pos + ")";
+        };
+      })
+      .styleTween("text-anchor", function (d) {
+        this._current = this._current || d;
+        var interpolate = d3.interpolate(this._current, d);
+        this._current = interpolate(0);
+        return function (t) {
+          var d2 = interpolate(t);
+          return midAngle(d2) < Math.PI ? "start" : "end";
+        };
+      });
+
+    text.exit()
+      .remove();
+
+    /* ------- SLICE TO TEXT POLYLINES ------- */
+    var polyline = svg.select(".lines").selectAll("polyline")
+      .data(pie(data), key);
+
+    polyline.enter()
+      .append("polyline");
+
+    polyline.transition().duration(1000)
+      .attrTween("points", function (d) {
+        this._current = this._current || d;
+        var interpolate = d3.interpolate(this._current, d);
+        this._current = interpolate(0);
+        return function (t) {
+          var d2 = interpolate(t);
+          var pos = outerArc.centroid(d2);
+          pos[0] = radius * 0.95 * (midAngle(d2) < Math.PI ? 1 : -1);
+          return [arc.centroid(d2), outerArc.centroid(d2), pos];
+        };
+      });
+
+    polyline.exit()
+      .remove();
+  }
+</script>
+
+
+
+
 </body>
 </html>
