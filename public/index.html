@@ -168,22 +168,6 @@
     <link rel="stylesheet" href="reset.css">
     <link rel="stylesheet" href="main.css">
 
-    <!-- css to fix charts -->
-    <!-- <style>
-        /* Flexbox container to hold the charts side by side */
-        .chart-container {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-        .chart {
-            width: 45%; /* Each chart takes about half the container's width */
-            text-align: center;
-        }
-    </style> -->
-    <!-- css to fix charts -->
 
 
 </head>
@@ -245,18 +229,21 @@
             </article>
 
             <!-- This is an A11y Change: Added an accessible label to the chart for screen readers -->
-            <article aria-labelledby="chartLabel">
-                <h1 id="chartLabel">Chart</h1>
-                <p>
-                    <canvas id="myChart" width="400" height="400" role="img" aria-label="Spending distribution pie chart"></canvas>
-                </p>
-            </article>
-            <article aria-labelledby="chartLabel">
-                <h1 id="chartLabel">D3JS Chart</h1>
-                <p>
-                    <svg id="d3-chart" width="400" height="400" ></svg>
-                </p>
-            </article>
+             <div id="chart-Container">
+                <article aria-labelledby="chartLabel">
+                    <h1 id="chartLabel">Chart</h1>
+                    <p>
+                        <canvas id="myChart" width="400" height="400" role="img" aria-label="Spending distribution pie chart"></canvas>
+                    </p>
+                </article>
+                <article aria-labelledby="chartLabel">
+                    <h1 id="chartLabel">D3JS Chart</h1>
+                    <p>
+                        <svg id="d3-chart" width="400" height="400" ></svg>
+                    </p>
+                </article>
+             </div>
+            
 
         </div>
 
@@ -337,8 +324,8 @@
   svg.append("g")
     .attr("class", "lines");
 
-  var width = 360,
-    height = 200,
+  var width = 380,
+    height = 270,
     radius = Math.min(width, height) / 2;
 
   var pie = d3.layout.pie()
