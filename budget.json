@@ -1,0 +1,40 @@
+{
+    "myBudget": [
+    {
+        "title":"Eat out",
+        "budget": 25
+    },
+    {
+        "title": "Rent",
+        "budget": 375
+    },
+    {
+        "title": "Groceries",
+        "budget": 110
+    },
+    {
+        "title": "Personal",
+        "budget": 50
+    },
+    {
+        "title": "Loan",
+        "budget": 500
+    },
+    {
+        "title": "Pets",
+        "budget": 40
+    },
+    {
+        "title": "Utilities",
+        "budget": 50
+    },
+    {
+        "title": "Family",
+        "budget": 200
+    },
+    {
+        "title": "House Maintenance",
+        "budget": 150
+    }
+    ]  
+}
